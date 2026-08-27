@@ -1,0 +1,105 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
+import solc from "solc";
+
+/**
+ * Compiles contracts/HydroTreasury.sol (+ TestImports.sol, which pulls in
+ * TimelockController for tests) with the npm-installed `solc` package —
+ * same reason as contracts/token: Hardhat's own compiler downloader is
+ * blocked by this environment's network policy.
+ *
+ * Tests need a real HydroToken to disburse, not a mock — copied in the
+ * same way contracts/staking copies it. See
+ * contracts/staking/scripts/compile.ts.
+ */
+
+const TREASURY_DIR = path.join(__dirname, "..");
+const CONTRACTS_DIR = path.join(TREASURY_DIR, "contracts");
+const ARTIFACTS_DIR = path.join(TREASURY_DIR, "artifacts");
+const HYDRO_TOKEN_SOURCE_PATH = path.join(TREASURY_DIR, "..", "token", "contracts", "HydroToken.sol");
+
+function resolveImport(importPath: string): { contents: string } | { error: string } {
+  try {
+    const resolved = require.resolve(importPath, { paths: [CONTRACTS_DIR, __dirname] });
+    return { contents: fs.readFileSync(resolved, "utf8") };
+  } catch (err) {
+    return { error: `File not found: ${importPath}` };
+  }
+}
+
+function findSources(dir: string, base = dir): Record<string, { content: string }> {
+  const sources: Record<string, { content: string }> = {};
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      Object.assign(sources, findSources(fullPath, base));
+    } else if (entry.name.endsWith(".sol")) {
+      const relative = path.relative(base, fullPath).split(path.sep).join("/");
+      sources[`contracts/${relative}`] = { content: fs.readFileSync(fullPath, "utf8") };
+    }
+  }
+  return sources;
+}
+
+function main() {
+  if (!fs.existsSync(HYDRO_TOKEN_SOURCE_PATH)) {
+    console.error(`${path.relative(process.cwd(), HYDRO_TOKEN_SOURCE_PATH)} not found.`);
+    process.exit(1);
+  }
+
+  const sources = findSources(CONTRACTS_DIR);
+  sources["contracts/HydroToken.sol"] = { content: fs.readFileSync(HYDRO_TOKEN_SOURCE_PATH, "utf8") };
+
+  const input = {
+    language: "Solidity",
+    sources,
+    settings: {
+      evmVersion: "cancun",
+      optimizer: { enabled: true, runs: 200 },
+      outputSelection: {
+        "*": {
+          "*": ["abi", "evm.bytecode.object", "evm.deployedBytecode.object"],
+        },
+      },
+    },
+  };
+
+  const output = JSON.parse(solc.compile(JSON.stringify(input), { import: resolveImport }));
+
+  const errors = (output.errors ?? []).filter((e: { severity: string }) => e.severity === "error");
+  for (const e of output.errors ?? []) {
+    console[e.severity === "error" ? "error" : "warn"](e.formattedMessage);
+  }
+  if (errors.length > 0) {
+    process.exit(1);
+  }
+
+  // Unlike most other packages' compile.ts, this doesn't skip non-local
+  // sources: tests deploy TimelockController directly — see
+  // contracts/governance/scripts/compile.ts for the same reasoning.
+  for (const [sourceName, fileOutput] of Object.entries<any>(output.contracts)) {
+    for (const [contractName, contract] of Object.entries<any>(fileOutput)) {
+      const outDir = path.join(ARTIFACTS_DIR, sourceName);
+      fs.mkdirSync(outDir, { recursive: true });
+
+      const artifact = {
+        _format: "hh-sol-artifact-1",
+        contractName,
+        sourceName,
+        abi: contract.abi,
+        bytecode: `0x${contract.evm.bytecode.object}`,
+        deployedBytecode: `0x${contract.evm.deployedBytecode.object}`,
+        linkReferences: {},
+        deployedLinkReferences: {},
+      };
+
+      fs.writeFileSync(
+        path.join(outDir, `${contractName}.json`),
+        JSON.stringify(artifact, null, 2)
+      );
+      console.log(`compiled ${sourceName}:${contractName}`);
+    }
+  }
+}
+
+main();

@@ -10,8 +10,8 @@ approvals), both additive OpenZeppelin extensions added for
 unaffected. A holder's balance does not count as votes until they call
 `delegate` (even to themselves); see `contracts/governance/README.md`.
 
-Staking and governance are built (`contracts/staking`,
-`contracts/governance`); treasury is not yet (`contracts/treasury`).
+Staking, governance and treasury are all built (`contracts/staking`,
+`contracts/governance`, `contracts/treasury`).
 
 ## Why not Foundry
 

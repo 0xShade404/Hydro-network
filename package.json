@@ -13,7 +13,8 @@
     "zk/verifier",
     "chain/settlement",
     "contracts/staking",
-    "contracts/governance"
+    "contracts/governance",
+    "contracts/treasury"
   ],
   "scripts": {
     "node:dev": "npm run node --workspace=contracts/token",
@@ -23,7 +24,7 @@
     "build:sdk": "npm run build --workspace=sdk/hydro-sdk",
     "test:sdk": "npm run test --workspace=sdk/hydro-sdk",
     "test:integration": "npm run test --workspace=tests",
-    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration && npm run test:explorer && npm run test:zk && npm run test:settlement && npm run test:staking && npm run test:governance",
+    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration && npm run test:explorer && npm run test:zk && npm run test:settlement && npm run test:staking && npm run test:governance && npm run test:treasury",
     "explorer:dev": "npm run dev --workspace=apps/explorer",
     "build:explorer": "npm run build --workspace=apps/explorer",
     "test:explorer": "npm run test --workspace=apps/explorer",
@@ -36,6 +37,8 @@
     "test:staking": "npm run test --workspace=contracts/staking",
     "deploy:staking:local": "npm run deploy:local --workspace=contracts/staking",
     "test:governance": "npm run test --workspace=contracts/governance",
-    "deploy:governance:local": "npm run deploy:local --workspace=contracts/governance"
+    "deploy:governance:local": "npm run deploy:local --workspace=contracts/governance",
+    "test:treasury": "npm run test --workspace=contracts/treasury",
+    "deploy:treasury:local": "npm run deploy:local --workspace=contracts/treasury"
   }
 }

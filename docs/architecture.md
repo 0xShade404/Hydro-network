@@ -73,8 +73,12 @@ posting, and a real prover service — Phase 2 of `docs/roadmap.md`.
   voting (no flash-loan governance), a timelock delay between a passed
   vote and execution, and no admin backdoor once deployment finishes. See
   `contracts/governance/README.md`.
+- `contracts/treasury/contracts/HydroTreasury.sol` — a governance-gated
+  vault for HYDRO/ETH; every disbursement is a single owner-authorized
+  transfer with an on-chain event, no budgeting/vesting logic. See
+  `contracts/treasury/README.md`.
 
-**Planned:** treasury contracts (`contracts/treasury`).
+This completes the `contracts/` set from the repository layout.
 
 ## SDK & Client Integration
 
