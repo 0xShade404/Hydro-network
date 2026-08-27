@@ -58,7 +58,8 @@ posting, and a real prover service — Phase 2 of `docs/roadmap.md`.
 
 **Built:**
 - `contracts/token/contracts/HydroToken.sol` — a fixed-supply ERC-20
-  (371,000,000 HYDRO), no mint function. Compiled with the npm `solc`
+  (371,000,000 HYDRO), no mint function. Also `ERC20Votes` + `ERC20Permit`
+  (added for governance; purely additive). Compiled with the npm `solc`
   package rather than Foundry/Hardhat's own downloader — see
   `contracts/token/README.md` for why.
 - `contracts/staking/contracts/HydroStaking.sol` — stake HYDRO, earn
@@ -66,9 +67,14 @@ posting, and a real prover service — Phase 2 of `docs/roadmap.md`.
   real transferred-in HYDRO (never minted). See `contracts/staking/README.md`
   for the holder-focused design rationale and the solvency guard that
   keeps staked principal from ever being used to pay rewards.
+- `contracts/governance/contracts/HydroGovernor.sol` — token-weighted
+  on-chain governance (OpenZeppelin `Governor` + `TimelockController`),
+  currently governing `HydroStaking`'s owner-only functions. Checkpointed
+  voting (no flash-loan governance), a timelock delay between a passed
+  vote and execution, and no admin backdoor once deployment finishes. See
+  `contracts/governance/README.md`.
 
-**Planned:** governance and treasury contracts (`contracts/governance`,
-`contracts/treasury`).
+**Planned:** treasury contracts (`contracts/treasury`).
 
 ## SDK & Client Integration
 

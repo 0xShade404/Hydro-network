@@ -4,8 +4,14 @@
 (371,000,000 HYDRO), minted entirely to a specified initial holder at
 deployment. No mint function exists, so the cap cannot be raised later.
 
-Staking, governance and treasury contracts are separate, not-yet-built
-modules (`contracts/staking`, `contracts/governance`, `contracts/treasury`).
+Also `ERC20Votes` (checkpointed voting power) and `ERC20Permit` (gasless
+approvals), both additive OpenZeppelin extensions added for
+`contracts/governance` — existing balances/transfers/allowances are
+unaffected. A holder's balance does not count as votes until they call
+`delegate` (even to themselves); see `contracts/governance/README.md`.
+
+Staking and governance are built (`contracts/staking`,
+`contracts/governance`); treasury is not yet (`contracts/treasury`).
 
 ## Why not Foundry
 

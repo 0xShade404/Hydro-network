@@ -61,6 +61,9 @@ function main() {
     language: "Solidity",
     sources,
     settings: {
+      // @openzeppelin/contracts (^5.0.2, resolves to 5.6.x) uses the MCOPY
+      // opcode in some utilities; MCOPY needs evmVersion >= cancun.
+      evmVersion: "cancun",
       optimizer: { enabled: true, runs: 200 },
       outputSelection: {
         "*": {

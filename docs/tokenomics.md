@@ -53,4 +53,13 @@ doesn't do (no vesting/penalties, not wired to governance yet).
 
 ## Governance Rights
 
-Not yet implemented (`contracts/governance`).
+Implemented: `contracts/governance/contracts/HydroGovernor.sol`,
+token-weighted on-chain governance built on OpenZeppelin's `Governor`
+framework. One HYDRO delegated = one vote (checkpointed at proposal
+creation, so tokens acquired after a proposal exists don't count for it).
+Currently governs `contracts/staking`'s owner-only functions — its
+ownership is transferred to a `TimelockController` at deployment, which
+also enforces a delay between a passed vote and execution and has no
+lingering admin key once set up. See `contracts/governance/README.md` for
+the full design and what it deliberately protects against (flash-loan
+voting, spam proposals, low-quorum capture, admin backdoors).

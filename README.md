@@ -284,13 +284,22 @@ network security.
   earn HYDRO, no lock-up, continuous per-second rewards, funded only by
   real transferred-in HYDRO (the contract can't mint, so staking never
   dilutes non-stakers). See `contracts/staking/README.md`.
+- **Governance** — `contracts/governance`'s `HydroGovernor.sol`:
+  token-weighted on-chain governance (OpenZeppelin `Governor` +
+  `TimelockController`), currently governing `HydroStaking`'s owner-only
+  functions. Checkpointed voting power (no flash-loan governance), a
+  timelock delay between a passed vote and execution, and no admin
+  backdoor once deployment finishes. `HydroToken` gained `ERC20Votes` +
+  `ERC20Permit` to support this. See `contracts/governance/README.md`.
 - **Tests** — contract unit tests, SDK unit tests, explorer component
   tests, an end-to-end integration test covering network + contract +
   SDK, ZK prover/verifier tests (including real on-chain pairing checks),
   settlement tests (valid transfers applied, mismatched/replayed proofs
-  rejected), and staking tests (reward fairness between stakers, no
-  forfeiting rewards on withdrawal, leftover-reward rollover). Run them
-  all with `npm run test:all`.
+  rejected), staking tests (reward fairness between stakers, no
+  forfeiting rewards on withdrawal, leftover-reward rollover), and
+  governance tests (full propose/vote/queue/execute flow, proposal
+  threshold, quorum, snapshot-based anti-flash-loan protection, timelock
+  delay enforcement). Run them all with `npm run test:all`.
 
 Everything else in this README (staking, governance, bridge, DeFi/RWA/DePIN
 examples, a full rollup state-transition circuit) is design/roadmap, not

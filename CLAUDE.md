@@ -167,6 +167,26 @@ surviving a withdrawal unclaimed, and leftover rewards rolling into a new
 funding period instead of being lost. Verified against a live devnet too.
 See `contracts/staking/README.md`.
 
+A first governance contract is also built: `contracts/governance`'s
+`HydroGovernor.sol` — token-weighted on-chain governance built almost
+entirely from OpenZeppelin's audited `Governor` + `TimelockController`
+framework rather than custom voting logic, currently governing
+`contracts/staking`'s owner-only functions (its ownership is transferred
+to the timelock at deployment). Built with an investor's downside
+explicitly in mind: voting power is checkpointed via `HydroToken`'s new
+`ERC20Votes` (tokens acquired or delegated after a proposal's snapshot
+don't count for it — no flash-loan governance), a timelock delay sits
+between a passed vote and execution (time to react before anything
+happens), a proposal threshold keeps out spam, a quorum requirement keeps
+a low-turnout minority from deciding outcomes, and the deployer's timelock
+admin role is renounced once setup finishes (no lingering backdoor). 7
+tests cover the full propose/vote/queue/execute flow, threshold and
+quorum rejection, the snapshot protection specifically, and the timelock
+delay actually blocking early execution. Verified against a live devnet
+too. `HydroToken` gained `ERC20Votes` + `ERC20Permit` for this — both
+purely additive, existing balances/transfers unaffected. See
+`contracts/governance/README.md`.
+
 Notes on environment-specific workarounds:
 - Contracts are compiled with the npm `solc` package instead of
   Foundry/Hardhat's own downloader, because this environment's network
@@ -174,8 +194,10 @@ Notes on environment-specific workarounds:
 - ZoKrates (`zokrates-js`) was chosen for circuits because it ships its
   compiler and prover as a self-contained WASM npm package, needing no
   separate binary download. See `zk/circuits/README.md`.
+- `@openzeppelin/contracts` (pinned `^5.0.2`, currently resolving to
+  5.6.x) uses the MCOPY opcode in some utilities, so every package's
+  `scripts/compile.ts` sets `evmVersion: "cancun"` explicitly.
 
-Everything past that (staking, governance, treasury, a real batch
-state-transition circuit, a sequencer, a real L1↔L2 bridge, dashboard,
-DeFi/RWA/DePIN examples) is not yet built — follow the build order above,
-one module at a time.
+Everything past that (treasury, a real batch state-transition circuit, a
+sequencer, a real L1↔L2 bridge, dashboard, DeFi/RWA/DePIN examples) is not
+yet built — follow the build order above, one module at a time.

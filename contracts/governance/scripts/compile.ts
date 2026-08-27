@@ -3,31 +3,33 @@ import * as path from "node:path";
 import solc from "solc";
 
 /**
- * Compiles contracts/HydroSettlement.sol with the npm-installed `solc`
- * package — same reason as contracts/token and zk/verifier: Hardhat's own
- * compiler downloader is blocked by this environment's network policy.
+ * Compiles contracts/HydroGovernor.sol with the npm-installed `solc`
+ * package — same reason as contracts/token: Hardhat's own compiler
+ * downloader is blocked by this environment's network policy.
  *
- * HydroSettlement.sol imports "./TransferValidityVerifier.sol", the
- * generated verifier from zk/circuits' compile step. Rather than resolve
- * that as a cross-package relative import (solc's import-callback
- * resolution rules for that are finicky to get right — see the comment
- * below), this script just reads the file from zk/verifier/contracts and
- * injects it into the same in-memory sources map under the matching key,
- * so solc resolves it exactly like a same-directory local import.
+ * Tests need real HydroToken (the voting token) and HydroStaking (the
+ * realistic governed target) contracts, not mocks, so this copies both
+ * in the same way contracts/staking copies HydroToken — see
+ * contracts/staking/scripts/compile.ts.
  */
 
-const SETTLEMENT_DIR = path.join(__dirname, "..");
-const CONTRACTS_DIR = path.join(SETTLEMENT_DIR, "contracts");
-const ARTIFACTS_DIR = path.join(SETTLEMENT_DIR, "artifacts");
-const VERIFIER_SOURCE_PATH = path.join(
-  SETTLEMENT_DIR,
-  "..",
-  "..",
-  "zk",
-  "verifier",
-  "contracts",
-  "TransferValidityVerifier.sol"
-);
+const GOVERNANCE_DIR = path.join(__dirname, "..");
+const CONTRACTS_DIR = path.join(GOVERNANCE_DIR, "contracts");
+const ARTIFACTS_DIR = path.join(GOVERNANCE_DIR, "artifacts");
+
+const COPIED_SOURCES = [
+  path.join(GOVERNANCE_DIR, "..", "token", "contracts", "HydroToken.sol"),
+  path.join(GOVERNANCE_DIR, "..", "staking", "contracts", "HydroStaking.sol"),
+];
+
+function resolveImport(importPath: string): { contents: string } | { error: string } {
+  try {
+    const resolved = require.resolve(importPath, { paths: [CONTRACTS_DIR, __dirname] });
+    return { contents: fs.readFileSync(resolved, "utf8") };
+  } catch (err) {
+    return { error: `File not found: ${importPath}` };
+  }
+}
 
 function findSources(dir: string, base = dir): Record<string, { content: string }> {
   const sources: Record<string, { content: string }> = {};
@@ -44,24 +46,22 @@ function findSources(dir: string, base = dir): Record<string, { content: string 
 }
 
 function main() {
-  if (!fs.existsSync(VERIFIER_SOURCE_PATH)) {
-    console.error(
-      `${path.relative(process.cwd(), VERIFIER_SOURCE_PATH)} not found — run \`npm run compile:zk\` (zk/circuits) first.`
-    );
-    process.exit(1);
-  }
-
   const sources = findSources(CONTRACTS_DIR);
-  sources["contracts/TransferValidityVerifier.sol"] = {
-    content: fs.readFileSync(VERIFIER_SOURCE_PATH, "utf8"),
-  };
+
+  for (const sourcePath of COPIED_SOURCES) {
+    if (!fs.existsSync(sourcePath)) {
+      console.error(`${path.relative(process.cwd(), sourcePath)} not found.`);
+      process.exit(1);
+    }
+    sources[`contracts/${path.basename(sourcePath)}`] = { content: fs.readFileSync(sourcePath, "utf8") };
+  }
 
   const input = {
     language: "Solidity",
     sources,
     settings: {
-      // Matches contracts/token & contracts/staking's compile.ts: recent
-      // @openzeppelin/contracts uses MCOPY, which needs evmVersion >= cancun.
+      // @openzeppelin/contracts (^5.0.2, resolves to 5.6.x) uses the MCOPY
+      // opcode in some utilities; MCOPY needs evmVersion >= cancun.
       evmVersion: "cancun",
       optimizer: { enabled: true, runs: 200 },
       outputSelection: {
@@ -72,7 +72,7 @@ function main() {
     },
   };
 
-  const output = JSON.parse(solc.compile(JSON.stringify(input)));
+  const output = JSON.parse(solc.compile(JSON.stringify(input), { import: resolveImport }));
 
   const errors = (output.errors ?? []).filter((e: { severity: string }) => e.severity === "error");
   for (const e of output.errors ?? []) {
@@ -82,9 +82,11 @@ function main() {
     process.exit(1);
   }
 
+  // Unlike the other packages' compile.ts, this doesn't skip non-local
+  // sources: tests deploy TimelockController directly (not just inherit
+  // from it), so its own artifact needs to exist too, not just be
+  // compiled into HydroGovernor's bytecode.
   for (const [sourceName, fileOutput] of Object.entries<any>(output.contracts)) {
-    if (!sourceName.startsWith("contracts/")) continue;
-
     for (const [contractName, contract] of Object.entries<any>(fileOutput)) {
       const outDir = path.join(ARTIFACTS_DIR, sourceName);
       fs.mkdirSync(outDir, { recursive: true });
