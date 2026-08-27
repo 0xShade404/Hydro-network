@@ -123,12 +123,14 @@ Build the foundation first.
 First milestone (local Hydro dev network) is built: EVM execution + JSON-RPC
 + block production via Hardhat Network (`chain/node`), the HydroToken
 ERC-20 (`contracts/token`), a deploy script, the Hydro SDK
-(`sdk/hydro-sdk`), and unit + integration tests (`npm run test:all`).
+(`sdk/hydro-sdk`), a basic block explorer (`apps/explorer`), and unit +
+integration tests (`npm run test:all`). The explorer was manually verified
+against a live devnet in a real browser (Playwright), not just unit-tested.
 
 Note: contracts are compiled with the npm `solc` package instead of
 Foundry/Hardhat's own downloader, because this environment's network policy
 blocks `binaries.soliditylang.org`. See `contracts/token/README.md`.
 
 Everything past that (staking, governance, treasury, ZK prover/verifier,
-bridge, explorer, dashboard, DeFi/RWA/DePIN examples) is not yet built —
-follow the build order above, one module at a time.
+bridge, dashboard, DeFi/RWA/DePIN examples) is not yet built — follow the
+build order above, one module at a time.

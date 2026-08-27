@@ -6,7 +6,8 @@
   "workspaces": [
     "contracts/token",
     "sdk/hydro-sdk",
-    "tests"
+    "tests",
+    "apps/explorer"
   ],
   "scripts": {
     "node:dev": "npm run node --workspace=contracts/token",
@@ -16,6 +17,9 @@
     "build:sdk": "npm run build --workspace=sdk/hydro-sdk",
     "test:sdk": "npm run test --workspace=sdk/hydro-sdk",
     "test:integration": "npm run test --workspace=tests",
-    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration"
+    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration && npm run test:explorer",
+    "explorer:dev": "npm run dev --workspace=apps/explorer",
+    "build:explorer": "npm run build --workspace=apps/explorer",
+    "test:explorer": "npm run test --workspace=apps/explorer"
   }
 }

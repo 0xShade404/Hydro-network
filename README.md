@@ -262,12 +262,15 @@ network security.
 - **Deployment script** — `npm run deploy:local`.
 - **Hydro SDK** — TypeScript client for reading/writing against the network
   (`sdk/hydro-sdk`).
-- **Tests** — contract unit tests, SDK unit tests, and an end-to-end
-  integration test covering network + contract + SDK together. Run them
-  all with `npm run test:all`.
+- **Explorer** — a basic block explorer (latest blocks, block/tx detail,
+  address + HYDRO balance lookup), reading the chain live via the SDK
+  (`apps/explorer`). Run it with `npm run explorer:dev`.
+- **Tests** — contract unit tests, SDK unit tests, explorer component
+  tests, and an end-to-end integration test covering network + contract +
+  SDK together. Run them all with `npm run test:all`.
 
 Everything else in this README (staking, governance, bridge, ZK pipeline,
-explorer, DeFi/RWA/DePIN examples) is design/roadmap, not yet implemented.
+DeFi/RWA/DePIN examples) is design/roadmap, not yet implemented.
 See `CLAUDE.md` for the build order and `docs/architecture.md` for a
 build-by-build breakdown.
 
