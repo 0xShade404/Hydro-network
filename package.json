@@ -15,7 +15,10 @@
     "contracts/staking",
     "contracts/governance",
     "contracts/treasury",
-    "apps/bridge"
+    "apps/bridge",
+    "examples/defi",
+    "examples/rwa",
+    "examples/depin"
   ],
   "scripts": {
     "node:dev": "npm run node --workspace=contracts/token",
@@ -25,7 +28,7 @@
     "build:sdk": "npm run build --workspace=sdk/hydro-sdk",
     "test:sdk": "npm run test --workspace=sdk/hydro-sdk",
     "test:integration": "npm run test --workspace=tests",
-    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration && npm run test:explorer && npm run test:zk && npm run test:settlement && npm run test:staking && npm run test:governance && npm run test:treasury && npm run test:bridge",
+    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration && npm run test:explorer && npm run test:zk && npm run test:settlement && npm run test:staking && npm run test:governance && npm run test:treasury && npm run test:bridge && npm run test:example-defi && npm run test:example-rwa && npm run test:example-depin",
     "explorer:dev": "npm run dev --workspace=apps/explorer",
     "build:explorer": "npm run build --workspace=apps/explorer",
     "test:explorer": "npm run test --workspace=apps/explorer",
@@ -43,6 +46,12 @@
     "deploy:treasury:local": "npm run deploy:local --workspace=contracts/treasury",
     "bridge:dev": "npm run dev --workspace=apps/bridge",
     "build:bridge": "npm run build --workspace=apps/bridge",
-    "test:bridge": "npm run test --workspace=apps/bridge"
+    "test:bridge": "npm run test --workspace=apps/bridge",
+    "test:example-defi": "npm run test --workspace=examples/defi",
+    "deploy:example-defi:local": "npm run deploy:local --workspace=examples/defi",
+    "test:example-rwa": "npm run test --workspace=examples/rwa",
+    "deploy:example-rwa:local": "npm run deploy:local --workspace=examples/rwa",
+    "test:example-depin": "npm run test --workspace=examples/depin",
+    "deploy:example-depin:local": "npm run deploy:local --workspace=examples/depin"
   }
 }

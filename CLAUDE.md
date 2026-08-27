@@ -230,6 +230,34 @@ Notes on environment-specific workarounds:
   5.6.x) uses the MCOPY opcode in some utilities, so every package's
   `scripts/compile.ts` sets `evmVersion: "cancun"` explicitly.
 
+One example each for DeFi, RWA, and DePIN is also built, each a real,
+tested primitive rather than a full product:
+
+- `examples/defi`'s `HydroSwapPair.sol` — a constant-product AMM (Uniswap
+  V2's `x*y=k` math and 0.3% fee, not a novel pricing mechanism) for a
+  HYDRO/mock-stablecoin pair. 8 tests cover first-deposit LP minting
+  (`sqrt(x*y)` with the minimum-liquidity burn), proportional minting on
+  later deposits, swap correctness, the constant product `k` strictly
+  increasing after a swap (proof the fee is retained), slippage
+  protection, and withdrawal returning current (fee-inclusive) balances.
+- `examples/rwa`'s `HydroRWANote.sol` — a permissioned note token: only
+  issuer-allowlisted addresses can hold/transfer it, and it redeems for a
+  fixed payout in a real asset (HYDRO) at a fixed maturity, funded rather
+  than promised (an underfunded maturity fails closed, never pays out
+  something the contract doesn't hold). 9 tests include the detail most
+  likely to get wrong: a holder whose compliance status is later revoked
+  can still redeem notes they already legitimately held — revocation
+  blocks future transfers, it isn't confiscation.
+- `examples/depin`'s `HydroDePINRewards.sol` — reuses
+  `contracts/staking`'s exact funded, non-inflationary reward-accrual
+  mechanism, with reporter-attested contribution units standing in for
+  staked balance. 8 tests mirror staking's fairness coverage. Documented
+  explicitly: the single trusted `reporter` role is the one thing a real
+  DePIN network can't simplify away — this only demonstrates what happens
+  *after* contribution is verified.
+
+All three were verified against a live devnet too.
+
 Everything past that (a real batch state-transition circuit, a sequencer,
-a real two-chain L1↔L2 bridge, dashboard, DeFi/RWA/DePIN examples) is not
-yet built — follow the build order above, one module at a time.
+a real two-chain L1↔L2 bridge, a dashboard app) is not yet built — follow
+the build order above, one module at a time.

@@ -302,7 +302,15 @@ network security.
   governance-gated vault for HYDRO/ETH, every disbursement a single
   owner-authorized transfer with an on-chain event. See
   `contracts/treasury/README.md`.
-- **Tests** — 90 tests total (`npm run test:all`): contract unit tests,
+- **DeFi, RWA and DePIN examples** — one real, tested primitive per
+  category, all in `examples/`: a constant-product AMM (`examples/defi`,
+  Uniswap V2-style pricing/fees), a permissioned maturity-redeemable note
+  token (`examples/rwa`, compliance allowlist + funded fixed-term
+  redemption), and reporter-attested contribution rewards
+  (`examples/depin`, reusing the staking contract's funding pattern
+  weighted by verified work instead of stake). Each has its own README
+  covering exactly what it simplifies and why.
+- **Tests** — 115 tests total (`npm run test:all`): contract unit tests,
   SDK unit tests, explorer + bridge component tests, an end-to-end
   integration test covering network + contract + SDK, ZK prover/verifier
   tests (real on-chain pairing checks), settlement tests (valid
@@ -311,11 +319,13 @@ network security.
   tests (reward fairness, no forfeiting rewards on withdrawal, leftover-
   reward rollover), governance tests (full propose/vote/queue/execute
   flow, proposal threshold, quorum, snapshot-based anti-flash-loan
-  protection, timelock delay enforcement), and treasury tests (access
-  control, correct disbursement, governance-gating).
+  protection, timelock delay enforcement), treasury tests (access
+  control, correct disbursement, governance-gating), and one test suite
+  per example (AMM math/fairness, RWA compliance/redemption, DePIN
+  reward fairness).
 
-Everything else in this README (a real cross-chain bridge, DeFi/RWA/DePIN
-examples, a full rollup state-transition circuit, a sequencer) is design/
+Everything else in this README (a real cross-chain bridge, a dashboard
+app, a full rollup state-transition circuit, a sequencer) is design/
 roadmap, not yet implemented.
 See `CLAUDE.md` for the build order and `docs/architecture.md` for a
 build-by-build breakdown.

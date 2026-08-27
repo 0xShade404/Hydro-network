@@ -103,6 +103,22 @@ Hydro chain definition, standard ERC-20 read/write helpers, and
 
 **Planned:** `apps/dashboard`.
 
+## Examples
+
+**Built:** one real, tested primitive per category — reference
+implementations, not full products:
+
+- `examples/defi/contracts/HydroSwapPair.sol` — a constant-product AMM
+  (Uniswap V2's `x*y=k` math and fee, not a novel pricing mechanism) for
+  a HYDRO/mock-stablecoin pair. See `examples/defi/README.md`.
+- `examples/rwa/contracts/HydroRWANote.sol` — a permissioned,
+  maturity-redeemable note token (compliance allowlist + funded
+  fixed-term redemption). See `examples/rwa/README.md`.
+- `examples/depin/contracts/HydroDePINRewards.sol` — reporter-attested
+  contribution rewards, reusing `contracts/staking`'s funded reward
+  mechanism with verified work standing in for staked balance. See
+  `examples/depin/README.md`.
+
 ## Data Flow
 
 **Token path:** `contracts/token` compiles HydroToken → deploy script or
