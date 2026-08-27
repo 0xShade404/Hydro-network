@@ -37,12 +37,19 @@ Not yet defined or implemented.
 
 Intended uses: network gas, staking, governance, ecosystem incentives,
 developer grants, DeFi liquidity, RWA settlement, DePIN payments, network
-participation. None of these are implemented yet — the current contract is
-a plain transferable ERC-20.
+participation. Staking is now implemented (below); the rest are not yet —
+`HydroToken` itself is still a plain transferable ERC-20 beyond that.
 
 ## Staking & Rewards
 
-Not yet implemented (`contracts/staking`).
+Implemented: `contracts/staking/contracts/HydroStaking.sol`. Stake HYDRO,
+earn HYDRO, no lock-up (withdraw any amount, any time). Rewards accrue
+continuously per second staked and are funded by whoever calls
+`addRewards` (expected: the treasury, from the "Staking & Security"
+allocation above) transferring real HYDRO in — this contract cannot mint,
+so staking never inflates supply or dilutes non-stakers. See
+`contracts/staking/README.md` for the full design and what it deliberately
+doesn't do (no vesting/penalties, not wired to governance yet).
 
 ## Governance Rights
 

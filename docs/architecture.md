@@ -56,13 +56,19 @@ posting, and a real prover service — Phase 2 of `docs/roadmap.md`.
 
 ## Smart Contract Layer
 
-**Built:** `contracts/token/contracts/HydroToken.sol` — a fixed-supply
-ERC-20 (371,000,000 HYDRO), no mint function. Compiled with the npm `solc`
-package rather than Foundry/Hardhat's own downloader — see
-`contracts/token/README.md` for why.
+**Built:**
+- `contracts/token/contracts/HydroToken.sol` — a fixed-supply ERC-20
+  (371,000,000 HYDRO), no mint function. Compiled with the npm `solc`
+  package rather than Foundry/Hardhat's own downloader — see
+  `contracts/token/README.md` for why.
+- `contracts/staking/contracts/HydroStaking.sol` — stake HYDRO, earn
+  HYDRO, no lock-up, continuous per-second reward accrual, funded only by
+  real transferred-in HYDRO (never minted). See `contracts/staking/README.md`
+  for the holder-focused design rationale and the solvency guard that
+  keeps staked principal from ever being used to pay rewards.
 
-**Planned:** staking, governance, and treasury contracts
-(`contracts/staking`, `contracts/governance`, `contracts/treasury`).
+**Planned:** governance and treasury contracts (`contracts/governance`,
+`contracts/treasury`).
 
 ## SDK & Client Integration
 

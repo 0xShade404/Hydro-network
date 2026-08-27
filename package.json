@@ -11,7 +11,8 @@
     "zk/circuits",
     "zk/prover",
     "zk/verifier",
-    "chain/settlement"
+    "chain/settlement",
+    "contracts/staking"
   ],
   "scripts": {
     "node:dev": "npm run node --workspace=contracts/token",
@@ -21,7 +22,7 @@
     "build:sdk": "npm run build --workspace=sdk/hydro-sdk",
     "test:sdk": "npm run test --workspace=sdk/hydro-sdk",
     "test:integration": "npm run test --workspace=tests",
-    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration && npm run test:explorer && npm run test:zk && npm run test:settlement",
+    "test:all": "npm run compile && npm run test:contracts && npm run test:sdk && npm run test:integration && npm run test:explorer && npm run test:zk && npm run test:settlement && npm run test:staking",
     "explorer:dev": "npm run dev --workspace=apps/explorer",
     "build:explorer": "npm run build --workspace=apps/explorer",
     "test:explorer": "npm run test --workspace=apps/explorer",
@@ -30,6 +31,8 @@
     "test:zk-verifier": "npm run test --workspace=zk/verifier",
     "test:zk": "npm run compile:zk && npm run test:zk-prover && npm run test:zk-verifier",
     "test:settlement": "npm run test --workspace=chain/settlement",
-    "deploy:settlement:local": "npm run deploy:local --workspace=chain/settlement"
+    "deploy:settlement:local": "npm run deploy:local --workspace=chain/settlement",
+    "test:staking": "npm run test --workspace=contracts/staking",
+    "deploy:staking:local": "npm run deploy:local --workspace=contracts/staking"
   }
 }

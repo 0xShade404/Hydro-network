@@ -151,6 +151,22 @@ time, not a batched rollup — `chain/sequencer` still doesn't exist, and
 there's still no real bridge moving actual HYDRO between L1 and this
 ledger. See `chain/settlement/README.md`.
 
+A first staking contract is also built: `contracts/staking`'s
+`HydroStaking.sol` — stake HYDRO, earn HYDRO, no lock-up, continuous
+per-second reward accrual (the standard Synthetix StakingRewards pattern,
+not a novel mechanism). Built with the holder's interests as the explicit
+design driver, not the protocol's: rewards can only come from HYDRO an
+owner actually transfers in via `addRewards` (the token has no mint
+function, so staking can never inflate supply or dilute non-stakers), and
+`addRewards` refuses to promise a reward rate the contract can't actually
+cover on top of everyone's staked principal — a holder's stake can never
+be eaten into to pay someone else's rewards. 10 tests cover reward
+fairness between multiple stakers (proportional to stake size and time,
+not gameable by timing since there's no snapshot/epoch), rewards
+surviving a withdrawal unclaimed, and leftover rewards rolling into a new
+funding period instead of being lost. Verified against a live devnet too.
+See `contracts/staking/README.md`.
+
 Notes on environment-specific workarounds:
 - Contracts are compiled with the npm `solc` package instead of
   Foundry/Hardhat's own downloader, because this environment's network

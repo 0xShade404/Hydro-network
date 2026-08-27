@@ -280,11 +280,17 @@ network security.
   submitted, checked against the contract's own stored balances (not
   trusted blindly). One proven transfer at a time, not a batched rollup —
   see `chain/settlement/README.md` for exactly what it is and isn't.
+- **Staking** — `contracts/staking`'s `HydroStaking.sol`: stake HYDRO,
+  earn HYDRO, no lock-up, continuous per-second rewards, funded only by
+  real transferred-in HYDRO (the contract can't mint, so staking never
+  dilutes non-stakers). See `contracts/staking/README.md`.
 - **Tests** — contract unit tests, SDK unit tests, explorer component
   tests, an end-to-end integration test covering network + contract +
   SDK, ZK prover/verifier tests (including real on-chain pairing checks),
-  and settlement tests (valid transfers applied, mismatched/replayed
-  proofs rejected). Run them all with `npm run test:all`.
+  settlement tests (valid transfers applied, mismatched/replayed proofs
+  rejected), and staking tests (reward fairness between stakers, no
+  forfeiting rewards on withdrawal, leftover-reward rollover). Run them
+  all with `npm run test:all`.
 
 Everything else in this README (staking, governance, bridge, DeFi/RWA/DePIN
 examples, a full rollup state-transition circuit) is design/roadmap, not
