@@ -127,10 +127,23 @@ ERC-20 (`contracts/token`), a deploy script, the Hydro SDK
 integration tests (`npm run test:all`). The explorer was manually verified
 against a live devnet in a real browser (Playwright), not just unit-tested.
 
-Note: contracts are compiled with the npm `solc` package instead of
-Foundry/Hardhat's own downloader, because this environment's network policy
-blocks `binaries.soliditylang.org`. See `contracts/token/README.md`.
+A first ZK proof pipeline is also built: `zk/circuits` (one ZoKrates
+circuit — a single transfer's validity, not a full batch/state-transition
+circuit), `zk/prover` (real Groth16 proof generation), `zk/verifier` (the
+generated Solidity verifier, tested with real on-chain pairing checks —
+accepts valid proofs, rejects tampered/mismatched ones). Its Groth16 setup
+is local and non-ceremony — fine for the pipeline demo, never for real
+value. See `zk/circuits/README.md` for the full scope and security notes.
 
-Everything past that (staking, governance, treasury, ZK prover/verifier,
-bridge, dashboard, DeFi/RWA/DePIN examples) is not yet built — follow the
-build order above, one module at a time.
+Notes on environment-specific workarounds:
+- Contracts are compiled with the npm `solc` package instead of
+  Foundry/Hardhat's own downloader, because this environment's network
+  policy blocks `binaries.soliditylang.org`. See `contracts/token/README.md`.
+- ZoKrates (`zokrates-js`) was chosen for circuits because it ships its
+  compiler and prover as a self-contained WASM npm package, needing no
+  separate binary download. See `zk/circuits/README.md`.
+
+Everything past that (staking, governance, treasury, Ethereum settlement /
+a real batch state-transition circuit, bridge, dashboard, DeFi/RWA/DePIN
+examples) is not yet built — follow the build order above, one module at a
+time.

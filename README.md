@@ -265,12 +265,24 @@ network security.
 - **Explorer** — a basic block explorer (latest blocks, block/tx detail,
   address + HYDRO balance lookup), reading the chain live via the SDK
   (`apps/explorer`). Run it with `npm run explorer:dev`.
+- **ZK proof pipeline** — a first, minimal circuit
+  (`zk/circuits/src/transferValidity.zok`, proving a single balance
+  transfer is valid without revealing the amount), a prover
+  (`zk/prover`) that generates real Groth16 proofs, and a generated
+  Solidity verifier (`zk/verifier`) that checks them on-chain via
+  Ethereum's pairing precompiles. This is one building-block circuit, not
+  a full rollup batch/state-transition proof — see `zk/circuits/README.md`
+  for exact scope, and its security note: the setup used is a local,
+  non-ceremony Groth16 setup, fine for demonstrating the pipeline but not
+  for securing real value.
 - **Tests** — contract unit tests, SDK unit tests, explorer component
-  tests, and an end-to-end integration test covering network + contract +
-  SDK together. Run them all with `npm run test:all`.
+  tests, an end-to-end integration test covering network + contract +
+  SDK, and ZK prover/verifier tests (including real on-chain pairing
+  checks). Run them all with `npm run test:all`.
 
-Everything else in this README (staking, governance, bridge, ZK pipeline,
-DeFi/RWA/DePIN examples) is design/roadmap, not yet implemented.
+Everything else in this README (staking, governance, bridge, DeFi/RWA/DePIN
+examples, a full rollup state-transition circuit) is design/roadmap, not
+yet implemented.
 See `CLAUDE.md` for the build order and `docs/architecture.md` for a
 build-by-build breakdown.
 

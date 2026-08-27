@@ -1,0 +1,14 @@
+{
+  "name": "@hydro/zk-circuits",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hydro ZK circuits, compiled with ZoKrates.",
+  "scripts": {
+    "compile": "ts-node --transpile-only scripts/compile.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
+    "zokrates-js": "^1.1.9"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@hydro/zk-prover",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generates Groth16 proofs for Hydro's ZK circuits.",
+  "main": "src/index.ts",
+  "scripts": {
+    "generate-example": "ts-node --transpile-only scripts/generateProof.ts",
+    "test": "vitest run --testTimeout=30000"
+  },
+  "dependencies": {
+    "zokrates-js": "^1.1.9"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

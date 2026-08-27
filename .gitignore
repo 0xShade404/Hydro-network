@@ -10,11 +10,9 @@ build/
 out/
 *.wasm
 
-# ZK artifacts
-zk/**/*.zkey
-zk/**/*.ptau
-zk/**/proving_key*
-zk/**/verification_key*
+# ZK artifacts (see zk/circuits/scripts/compile.ts)
+zk/circuits/build/
+zk/verifier/contracts/*.sol
 
 # Hardhat / Solidity build output
 artifacts/

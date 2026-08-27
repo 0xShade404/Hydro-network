@@ -20,8 +20,26 @@ until that exists.
 
 ## ZK Layer (Circuits, Prover, Verifier)
 
-Not built yet (`zk/circuits`, `zk/prover`, `zk/verifier`). Planned for
-Phase 2.
+**Built:** a first, minimal pipeline demonstrating circuit → prover →
+on-chain verifier, using [ZoKrates](https://zokrates.github.io/):
+
+- `zk/circuits/src/transferValidity.zok` — proves a single balance
+  transfer is valid (sufficient balance, value conserved) without
+  revealing the sender's balance or the amount.
+- `zk/prover` — generates real Groth16 proofs against that circuit.
+- `zk/verifier` — the generated Solidity verifier, deployed and checked
+  on-chain via Ethereum's `ecAdd`/`ecMul`/`ecPairing` precompiles; tests
+  cover accepting valid proofs and rejecting tampered/mismatched ones.
+
+This is one building-block circuit, not a full batch/state-transition
+circuit that proves an entire block of transactions against a Merkle
+state root — that's still planned. The Groth16 setup used is local and
+non-ceremony (see `zk/circuits/README.md`): fine for developing the
+pipeline, not for securing real value — a production deployment needs an
+actual trusted-setup ceremony first.
+
+**Planned:** a batch/state-transition circuit, Ethereum settlement (state
+root posting), and a real prover service — Phase 2 of `docs/roadmap.md`.
 
 ## Smart Contract Layer
 

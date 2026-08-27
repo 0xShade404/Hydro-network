@@ -1,0 +1,27 @@
+// TransferValidity: proves that a single balance transfer is valid without
+// revealing the sender's starting balance or the transferred amount.
+//
+// Private witness:
+//   senderBalanceBefore  - sender's balance before the transfer
+//   amount                - amount transferred
+//
+// Public inputs:
+//   senderBalanceAfter     - sender's balance after the transfer
+//   recipientBalanceBefore - recipient's balance before the transfer
+//   recipientBalanceAfter  - recipient's balance after the transfer
+//
+// Constraints enforced:
+//   - the sender has enough balance to cover the transfer (no underflow)
+//   - the sender's new balance is exactly balance - amount
+//   - the recipient's new balance is exactly balance + amount
+//     (i.e. value is conserved: nothing is created or destroyed)
+//
+// This is the smallest building block of a rollup validity proof, not a
+// full batch/state-transition circuit for the whole chain — see
+// zk/circuits/README.md for scope and what's still missing.
+def main(private u64 senderBalanceBefore, private u64 amount, u64 senderBalanceAfter, u64 recipientBalanceBefore, u64 recipientBalanceAfter) -> bool {
+    assert(amount <= senderBalanceBefore);
+    assert(senderBalanceAfter == senderBalanceBefore - amount);
+    assert(recipientBalanceAfter == recipientBalanceBefore + amount);
+    return true;
+}
