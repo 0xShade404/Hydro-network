@@ -1,10 +1,29 @@
 # Settlement
 
 `contracts/HydroSettlement.sol` — a minimal L1 settlement contract: an
-on-chain ledger (`balances`) that only changes when someone submits a valid
-`zk/circuits` `TransferValidity` proof. This is the core pattern a real
-rollup settlement contract uses — "accept a state transition only with a
-valid proof" — wired up end to end for the first time in this repo.
+on-chain ledger (`balances`) that only changes via `submitTransfer` (which
+requires a valid `zk/circuits` `TransferValidity` proof) or `deposit`/
+`withdraw` (which lock/release real HYDRO 1:1 against the ledger — the
+bridge primitive `apps/bridge` is built on). This is the core pattern a
+real rollup settlement contract uses — "accept a state transition only
+with a valid proof," with every ledger balance actually backed by locked
+funds — wired up end to end for the first time in this repo.
+
+## Solvency: every ledger balance is real, locked HYDRO
+
+An earlier version of this contract had an owner-only `fund()` faucet for
+seeding demo balances, explicitly documented as not touching real HYDRO.
+That was fine as a standalone demo, but it doesn't compose safely with a
+real `withdraw()`: a `fund()`-created balance was never backed by
+anything, so releasing real HYDRO against it would either revert or —
+worse, if other balances happened to cover it — silently drain HYDRO that
+real depositors had actually locked. `fund()` is gone; `deposit()` is the
+only way to create a ledger balance now, and it always locks the matching
+HYDRO first. `tokenBalance()` (the contract's real HYDRO balance) should
+never fall below the sum of all ledger balances — `deposit` only credits
+what it locks, `withdraw` only releases what it debits, and
+`submitTransfer` only moves value between existing balances, never
+creates or destroys it.
 
 ## What this is NOT
 
@@ -14,9 +33,12 @@ valid proof" — wired up end to end for the first time in this repo.
   much bigger circuit and contract, still unbuilt.
 - **Not connected to a sequencer.** `chain/sequencer` doesn't exist yet —
   nothing batches or orders transactions into this contract.
-- **Not connected to `HydroToken`.** `fund()` is a dev-only owner faucet
-  for seeding demo balances; there's no real L1↔L2 bridge moving actual
-  HYDRO tokens in or out yet (see `apps/bridge`, also unbuilt).
+- **Not a real cross-chain bridge.** `deposit`/`withdraw` are the bridge
+  *primitive* (lock real value, credit/debit a ledger 1:1) — but there's
+  only one chain here, standing in for both L1 and L2. A real bridge also
+  needs a second, actually-separate chain, L1 finality proofs for
+  withdrawals, and typically a challenge period — none of that exists
+  yet. See `apps/bridge/README.md`.
 - **Not secure for real value.** The verifying key baked into the
   deployed `Verifier` comes from `zk/circuits`' local, non-ceremony
   Groth16 setup. See `zk/circuits/README.md`.

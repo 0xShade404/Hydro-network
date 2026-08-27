@@ -14,13 +14,15 @@ provides standard EVM execution, JSON-RPC, and auto-mined block production
 on a provisional devnet chain id (`90731`, see `chain/config/local.json`).
 
 **Also built:** a first settlement contract, `chain/settlement`'s
-`HydroSettlement.sol` — an on-chain balances ledger that only updates when
-a valid `zk/circuits` proof is submitted, checked against the contract's
-own stored "before" balances rather than trusted blindly (so a proof
-can't be replayed once the ledger has moved on, and a caller can't claim
-an outcome the proof doesn't actually cover). It applies one proven
-transfer at a time; there is no sequencer yet to batch transactions into
-it. See `chain/settlement/README.md`.
+`HydroSettlement.sol` — an on-chain balances ledger that updates via
+`submitTransfer` (only with a valid `zk/circuits` proof, checked against
+the contract's own stored "before" balances rather than trusted blindly —
+a proof can't be replayed once the ledger has moved on, and a caller
+can't claim an outcome the proof doesn't actually cover) or `deposit`/
+`withdraw` (lock/release real HYDRO 1:1 — every ledger balance is backed
+by HYDRO the contract actually holds; there's no faucet anymore). It
+applies one proven transfer at a time; there is no sequencer yet to batch
+transactions into it. See `chain/settlement/README.md`.
 
 **Planned:** a real Hydro sequencer (`chain/sequencer`) and node
 (`chain/node`) that batch transactions and post a real
@@ -37,7 +39,10 @@ on-chain verifier, using [ZoKrates](https://zokrates.github.io/):
   transfer is valid (sufficient balance, value conserved) without
   revealing the transferred amount. Balances are public inputs (needed so
   `chain/settlement` can check them against its own ledger) — see
-  `zk/circuits/README.md`'s "Why balances are public".
+  `zk/circuits/README.md`'s "Why balances are public". Balances use
+  ZoKrates' `field` type rather than a fixed-width uint: an earlier
+  `u64` version overflowed past ~18 whole HYDRO once real 18-decimal
+  amounts were involved.
 - `zk/prover` — generates real Groth16 proofs against that circuit.
 - `zk/verifier` — the generated Solidity verifier, deployed and checked
   on-chain via Ethereum's `ecAdd`/`ecMul`/`ecPairing` precompiles; tests
@@ -83,7 +88,20 @@ This completes the `contracts/` set from the repository layout.
 ## SDK & Client Integration
 
 **Built:** `sdk/hydro-sdk` — a TypeScript client (viem-based) exposing a
-Hydro chain definition and standard ERC-20 read/write helpers.
+Hydro chain definition, standard ERC-20 read/write helpers, and
+`chain/settlement` deposit/withdraw helpers
+(`depositToSettlement`/`withdrawFromSettlement`/`getSettlementBalance`).
+
+## Apps
+
+**Built:**
+- `apps/explorer` — read-only block explorer (see Milestone 1 above).
+- `apps/bridge` — a UI for `HydroSettlement`'s deposit/withdraw. Not a
+  real cross-chain bridge yet: there's one chain here standing in for
+  both L1 and L2. See `apps/bridge/README.md` for why it uses a pasted
+  local-devnet private key instead of a wallet-extension connection.
+
+**Planned:** `apps/dashboard`.
 
 ## Data Flow
 
@@ -94,11 +112,14 @@ SDK deploys it to the local devnet started by `chain/node` →
 
 **Settlement path:** `zk/circuits` compiles the circuit and generates the
 `zk/verifier` Solidity verifier → `chain/settlement` deploys
-`HydroSettlement` pointing at that verifier and seeds demo balances →
-`zk/prover` generates a proof for a transfer against the settlement
-contract's current on-chain balances → `HydroSettlement.submitTransfer`
-checks that proof against its own stored state before applying it.
-`chain/settlement/test` exercises this end-to-end, including the
-proof-vs-state-mismatch and replay-rejection cases; it was also manually
-verified against a live devnet (not just Hardhat's in-process test
-network) while building it.
+`HydroSettlement` pointing at that verifier and a real `HydroToken` →
+accounts `deposit` real HYDRO to get a ledger balance (`apps/bridge` is
+the UI for this) → `zk/prover` generates a proof for a transfer against
+the settlement contract's current on-chain balances →
+`HydroSettlement.submitTransfer` checks that proof against its own
+stored state before applying it → a recipient can `withdraw` real HYDRO
+back out. `chain/settlement/test` exercises this end-to-end, including
+the proof-vs-state-mismatch and replay-rejection cases; both the
+settlement contract and the bridge UI were also manually verified against
+a live devnet (not just Hardhat's in-process test network / mocked
+components) while building them.

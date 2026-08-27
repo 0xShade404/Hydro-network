@@ -8,11 +8,11 @@ import {
   type WalletClient,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { erc20Abi } from "./abi.js";
+import { erc20Abi, hydroSettlementAbi } from "./abi.js";
 import { hydroLocal } from "./chain.js";
 
 export { hydroLocal } from "./chain.js";
-export { erc20Abi } from "./abi.js";
+export { erc20Abi, hydroSettlementAbi } from "./abi.js";
 
 export interface HydroClientOptions {
   /** JSON-RPC URL of the Hydro network to connect to. Defaults to the local devnet. */
@@ -86,6 +86,116 @@ export async function transferToken(
     abi: erc20Abi,
     functionName: "transfer",
     args: [to, amount],
+    account: walletClient.account,
+    chain: walletClient.chain,
+  });
+}
+
+/** Reads how much `spender` is currently allowed to pull from `owner`. */
+export async function getAllowance(
+  client: PublicClient,
+  tokenAddress: Address,
+  owner: Address,
+  spender: Address
+): Promise<bigint> {
+  return client.readContract({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [owner, spender],
+  });
+}
+
+/** Approves `spender` to pull up to `amount` of an ERC-20 token. */
+export async function approveToken(
+  walletClient: WalletClient,
+  tokenAddress: Address,
+  spender: Address,
+  amount: bigint
+): Promise<Hash> {
+  if (!walletClient.account) {
+    throw new Error("approveToken: wallet client has no account");
+  }
+  return walletClient.writeContract({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: "approve",
+    args: [spender, amount],
+    account: walletClient.account,
+    chain: walletClient.chain,
+  });
+}
+
+/**
+ * chain/settlement helpers — the bridge primitive that locks/releases
+ * real HYDRO 1:1 against HydroSettlement's on-chain ledger. See
+ * chain/settlement/README.md for what this is (and isn't).
+ */
+
+/** Reads an account's ledger balance on a HydroSettlement contract. */
+export async function getSettlementBalance(
+  client: PublicClient,
+  settlementAddress: Address,
+  account: Address
+): Promise<bigint> {
+  return client.readContract({
+    address: settlementAddress,
+    abi: hydroSettlementAbi,
+    functionName: "balances",
+    args: [account],
+  });
+}
+
+/**
+ * Deposits `amount` HYDRO into a HydroSettlement ledger, approving first
+ * if the existing allowance isn't already enough. Returns the deposit
+ * transaction hash (and the approval's, if one was needed).
+ */
+export async function depositToSettlement(
+  publicClient: PublicClient,
+  walletClient: WalletClient,
+  settlementAddress: Address,
+  tokenAddress: Address,
+  amount: bigint
+): Promise<{ approveHash?: Hash; depositHash: Hash }> {
+  if (!walletClient.account) {
+    throw new Error("depositToSettlement: wallet client has no account");
+  }
+  const owner = walletClient.account.address;
+
+  let approveHash: Hash | undefined;
+  const currentAllowance = await getAllowance(publicClient, tokenAddress, owner, settlementAddress);
+  if (currentAllowance < amount) {
+    approveHash = await approveToken(walletClient, tokenAddress, settlementAddress, amount);
+    await publicClient.waitForTransactionReceipt({ hash: approveHash });
+  }
+
+  const depositHash = await walletClient.writeContract({
+    address: settlementAddress,
+    abi: hydroSettlementAbi,
+    functionName: "deposit",
+    args: [amount],
+    account: walletClient.account,
+    chain: walletClient.chain,
+  });
+
+  return { approveHash, depositHash };
+}
+
+/** Withdraws `amount` HYDRO from a HydroSettlement ledger back to the caller's wallet. */
+export async function withdrawFromSettlement(
+  walletClient: WalletClient,
+  settlementAddress: Address,
+  amount: bigint
+): Promise<Hash> {
+  if (!walletClient.account) {
+    throw new Error("withdrawFromSettlement: wallet client has no account");
+  }
+  return walletClient.writeContract({
+    address: settlementAddress,
+    abi: hydroSettlementAbi,
+    functionName: "withdraw",
+    args: [amount],
     account: walletClient.account,
     chain: walletClient.chain,
   });

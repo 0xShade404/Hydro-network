@@ -1,8 +1,9 @@
 import { ethers } from "hardhat";
 
 /**
- * Deploys the Verifier and HydroSettlement, then seeds two demo accounts
- * with balances so a transfer can be settled right away. Usage:
+ * Deploys a fresh HydroToken, the Verifier, and HydroSettlement, then has
+ * two demo accounts deposit real HYDRO into the settlement ledger so a
+ * transfer can be settled right away. Usage:
  *
  *   npm run deploy:local --workspace=chain/settlement
  *
@@ -11,21 +12,35 @@ import { ethers } from "hardhat";
 async function main() {
   const [deployer, alice, bob] = await ethers.getSigners();
 
+  const tokenFactory = await ethers.getContractFactory("HydroToken");
+  const token = await tokenFactory.deploy(deployer.address);
+  await token.waitForDeployment();
+  const tokenAddress = await token.getAddress();
+
   const verifierFactory = await ethers.getContractFactory("Verifier");
   const verifier = await verifierFactory.deploy();
   await verifier.waitForDeployment();
 
   const settlementFactory = await ethers.getContractFactory("HydroSettlement");
-  const settlement = await settlementFactory.deploy(await verifier.getAddress());
+  const settlement = await settlementFactory.deploy(await verifier.getAddress(), tokenAddress);
   await settlement.waitForDeployment();
+  const settlementAddress = await settlement.getAddress();
 
-  await (await settlement.fund(alice.address, 100)).wait();
-  await (await settlement.fund(bob.address, 10)).wait();
+  const aliceAmount = ethers.parseUnits("100", 18);
+  const bobAmount = ethers.parseUnits("10", 18);
 
-  console.log("Verifier deployed:      ", await verifier.getAddress());
-  console.log("HydroSettlement deployed:", await settlement.getAddress());
-  console.log("  funded", alice.address, "with 100");
-  console.log("  funded", bob.address, "with 10");
+  await (await token.transfer(alice.address, aliceAmount)).wait();
+  await (await token.transfer(bob.address, bobAmount)).wait();
+  await (await token.connect(alice).approve(settlementAddress, aliceAmount)).wait();
+  await (await token.connect(bob).approve(settlementAddress, bobAmount)).wait();
+  await (await settlement.connect(alice).deposit(aliceAmount)).wait();
+  await (await settlement.connect(bob).deposit(bobAmount)).wait();
+
+  console.log("HydroToken deployed:      ", tokenAddress);
+  console.log("Verifier deployed:        ", await verifier.getAddress());
+  console.log("HydroSettlement deployed: ", settlementAddress);
+  console.log("  ", alice.address, "deposited", ethers.formatUnits(aliceAmount, 18), "HYDRO");
+  console.log("  ", bob.address, "deposited", ethers.formatUnits(bobAmount, 18), "HYDRO");
 }
 
 main().catch((error) => {

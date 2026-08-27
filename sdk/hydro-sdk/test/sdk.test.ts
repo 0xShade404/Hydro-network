@@ -1,5 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { createHydroClient, erc20Abi, hydroLocal } from "../src/index.js";
+import { describe, expect, it, vi } from "vitest";
+import {
+  createHydroClient,
+  depositToSettlement,
+  erc20Abi,
+  hydroLocal,
+  hydroSettlementAbi,
+} from "../src/index.js";
+import type { PublicClient, WalletClient } from "viem";
 
 describe("hydroLocal chain definition", () => {
   it("has the provisional Hydro devnet chain id", () => {
@@ -28,6 +35,67 @@ describe("erc20Abi", () => {
         "transfer",
         "approve",
       ])
+    );
+  });
+});
+
+describe("hydroSettlementAbi", () => {
+  const functionNames = hydroSettlementAbi
+    .filter((f) => f.type === "function")
+    .map((f) => f.name);
+
+  it("covers deposit/withdraw/balances/tokenBalance", () => {
+    expect(functionNames).toEqual(
+      expect.arrayContaining(["deposit", "withdraw", "balances", "tokenBalance", "token"])
+    );
+  });
+});
+
+describe("depositToSettlement", () => {
+  const tokenAddress = "0x0000000000000000000000000000000000000001" as `0x${string}`;
+  const settlementAddress = "0x0000000000000000000000000000000000000002" as `0x${string}`;
+  const owner = "0x0000000000000000000000000000000000000003" as `0x${string}`;
+
+  function mockClients(currentAllowance: bigint) {
+    const publicClient = {
+      readContract: vi.fn().mockResolvedValue(currentAllowance),
+      waitForTransactionReceipt: vi.fn().mockResolvedValue({}),
+    } as unknown as PublicClient;
+
+    const writeContract = vi.fn().mockResolvedValueOnce("0xapprove").mockResolvedValueOnce("0xdeposit");
+    const walletClient = {
+      account: { address: owner },
+      writeContract,
+    } as unknown as WalletClient;
+
+    return { publicClient, walletClient, writeContract };
+  }
+
+  it("skips approval when the existing allowance already covers the deposit", async () => {
+    const { publicClient, walletClient, writeContract } = mockClients(1000n);
+    const result = await depositToSettlement(publicClient, walletClient, settlementAddress, tokenAddress, 500n);
+
+    expect(result.approveHash).toBeUndefined();
+    expect(writeContract).toHaveBeenCalledTimes(1);
+    expect(writeContract).toHaveBeenCalledWith(
+      expect.objectContaining({ functionName: "deposit", args: [500n] })
+    );
+  });
+
+  it("approves first when the existing allowance is insufficient", async () => {
+    const { publicClient, walletClient, writeContract } = mockClients(0n);
+    const result = await depositToSettlement(publicClient, walletClient, settlementAddress, tokenAddress, 500n);
+
+    expect(result.approveHash).toBe("0xapprove");
+    expect(result.depositHash).toBe("0xdeposit");
+    expect(writeContract).toHaveBeenCalledTimes(2);
+    expect(writeContract).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ functionName: "approve", args: [settlementAddress, 500n] })
+    );
+    expect(writeContract).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ functionName: "deposit", args: [500n] })
     );
   });
 });

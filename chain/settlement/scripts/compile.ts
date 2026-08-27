@@ -13,7 +13,9 @@ import solc from "solc";
  * resolution rules for that are finicky to get right — see the comment
  * below), this script just reads the file from zk/verifier/contracts and
  * injects it into the same in-memory sources map under the matching key,
- * so solc resolves it exactly like a same-directory local import.
+ * so solc resolves it exactly like a same-directory local import. Tests
+ * also need a real HydroToken to deposit/withdraw, copied in the same way
+ * — see contracts/staking/scripts/compile.ts.
  */
 
 const SETTLEMENT_DIR = path.join(__dirname, "..");
@@ -28,6 +30,16 @@ const VERIFIER_SOURCE_PATH = path.join(
   "contracts",
   "TransferValidityVerifier.sol"
 );
+const HYDRO_TOKEN_SOURCE_PATH = path.join(SETTLEMENT_DIR, "..", "..", "contracts", "token", "contracts", "HydroToken.sol");
+
+function resolveImport(importPath: string): { contents: string } | { error: string } {
+  try {
+    const resolved = require.resolve(importPath, { paths: [CONTRACTS_DIR, __dirname] });
+    return { contents: fs.readFileSync(resolved, "utf8") };
+  } catch (err) {
+    return { error: `File not found: ${importPath}` };
+  }
+}
 
 function findSources(dir: string, base = dir): Record<string, { content: string }> {
   const sources: Record<string, { content: string }> = {};
@@ -50,10 +62,17 @@ function main() {
     );
     process.exit(1);
   }
+  if (!fs.existsSync(HYDRO_TOKEN_SOURCE_PATH)) {
+    console.error(`${path.relative(process.cwd(), HYDRO_TOKEN_SOURCE_PATH)} not found.`);
+    process.exit(1);
+  }
 
   const sources = findSources(CONTRACTS_DIR);
   sources["contracts/TransferValidityVerifier.sol"] = {
     content: fs.readFileSync(VERIFIER_SOURCE_PATH, "utf8"),
+  };
+  sources["contracts/HydroToken.sol"] = {
+    content: fs.readFileSync(HYDRO_TOKEN_SOURCE_PATH, "utf8"),
   };
 
   const input = {
@@ -72,7 +91,7 @@ function main() {
     },
   };
 
-  const output = JSON.parse(solc.compile(JSON.stringify(input)));
+  const output = JSON.parse(solc.compile(JSON.stringify(input), { import: resolveImport }));
 
   const errors = (output.errors ?? []).filter((e: { severity: string }) => e.severity === "error");
   for (const e of output.errors ?? []) {

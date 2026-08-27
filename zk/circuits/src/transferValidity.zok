@@ -25,10 +25,21 @@
 // which looked more private but was actually unusable for settlement:
 // see chain/settlement/README.md.
 //
+// Balances use `field` rather than a fixed-width uint: HYDRO has 18
+// decimals, so even a modest balance like 1000 HYDRO is 1000 * 10^18 base
+// units — far past u64's ~1.8*10^19 ceiling (about 18 whole HYDRO). An
+// earlier version of this circuit used u64, which "worked" only for
+// unrealistically small test balances; it couldn't have represented a
+// real holder's balance once wired to actual HYDRO (chain/settlement's
+// deposit/withdraw). `field` is ZoKrates' native ~254-bit prime field
+// element — comfortably larger than the entire 371M-HYDRO max supply
+// (~2^88 base units) — so comparisons and arithmetic here are exact, not
+// an approximation, for any real HYDRO amount.
+//
 // This is the smallest building block of a rollup validity proof, not a
 // full batch/state-transition circuit for the whole chain — see
 // zk/circuits/README.md for scope and what's still missing.
-def main(u64 senderBalanceBefore, private u64 amount, u64 senderBalanceAfter, u64 recipientBalanceBefore, u64 recipientBalanceAfter) -> bool {
+def main(field senderBalanceBefore, private field amount, field senderBalanceAfter, field recipientBalanceBefore, field recipientBalanceAfter) -> bool {
     assert(amount <= senderBalanceBefore);
     assert(senderBalanceAfter == senderBalanceBefore - amount);
     assert(recipientBalanceAfter == recipientBalanceBefore + amount);

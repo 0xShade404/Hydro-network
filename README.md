@@ -276,10 +276,17 @@ network security.
   non-ceremony Groth16 setup, fine for demonstrating the pipeline but not
   for securing real value.
 - **Settlement contract** — `chain/settlement`'s `HydroSettlement.sol`, an
-  on-chain ledger that only updates when a valid `zk/circuits` proof is
-  submitted, checked against the contract's own stored balances (not
-  trusted blindly). One proven transfer at a time, not a batched rollup —
-  see `chain/settlement/README.md` for exactly what it is and isn't.
+  on-chain ledger that only updates via `submitTransfer` (a valid
+  `zk/circuits` proof, checked against the contract's own stored
+  balances, not trusted blindly) or `deposit`/`withdraw` (which lock/
+  release real HYDRO 1:1 — every ledger balance is backed by HYDRO the
+  contract actually holds). One proven transfer at a time, not a batched
+  rollup — see `chain/settlement/README.md` for exactly what it is and
+  isn't.
+- **Bridge** — `apps/bridge`: a UI for `HydroSettlement`'s deposit/
+  withdraw primitive. There's one chain here standing in for both L1 and
+  L2, so this isn't a real cross-chain bridge yet — see
+  `apps/bridge/README.md`. Run it with `npm run bridge:dev`.
 - **Staking** — `contracts/staking`'s `HydroStaking.sol`: stake HYDRO,
   earn HYDRO, no lock-up, continuous per-second rewards, funded only by
   real transferred-in HYDRO (the contract can't mint, so staking never
@@ -291,19 +298,25 @@ network security.
   timelock delay between a passed vote and execution, and no admin
   backdoor once deployment finishes. `HydroToken` gained `ERC20Votes` +
   `ERC20Permit` to support this. See `contracts/governance/README.md`.
-- **Tests** — contract unit tests, SDK unit tests, explorer component
-  tests, an end-to-end integration test covering network + contract +
-  SDK, ZK prover/verifier tests (including real on-chain pairing checks),
-  settlement tests (valid transfers applied, mismatched/replayed proofs
-  rejected), staking tests (reward fairness between stakers, no
-  forfeiting rewards on withdrawal, leftover-reward rollover), and
-  governance tests (full propose/vote/queue/execute flow, proposal
-  threshold, quorum, snapshot-based anti-flash-loan protection, timelock
-  delay enforcement). Run them all with `npm run test:all`.
+- **Treasury** — `contracts/treasury`'s `HydroTreasury.sol`: a
+  governance-gated vault for HYDRO/ETH, every disbursement a single
+  owner-authorized transfer with an on-chain event. See
+  `contracts/treasury/README.md`.
+- **Tests** — 90 tests total (`npm run test:all`): contract unit tests,
+  SDK unit tests, explorer + bridge component tests, an end-to-end
+  integration test covering network + contract + SDK, ZK prover/verifier
+  tests (real on-chain pairing checks), settlement tests (valid
+  transfers/deposits/withdrawals applied, mismatched/replayed proofs
+  rejected, ledger balances always backed by real locked HYDRO), staking
+  tests (reward fairness, no forfeiting rewards on withdrawal, leftover-
+  reward rollover), governance tests (full propose/vote/queue/execute
+  flow, proposal threshold, quorum, snapshot-based anti-flash-loan
+  protection, timelock delay enforcement), and treasury tests (access
+  control, correct disbursement, governance-gating).
 
-Everything else in this README (staking, governance, bridge, DeFi/RWA/DePIN
-examples, a full rollup state-transition circuit) is design/roadmap, not
-yet implemented.
+Everything else in this README (a real cross-chain bridge, DeFi/RWA/DePIN
+examples, a full rollup state-transition circuit, a sequencer) is design/
+roadmap, not yet implemented.
 See `CLAUDE.md` for the build order and `docs/architecture.md` for a
 build-by-build breakdown.
 

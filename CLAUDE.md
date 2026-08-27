@@ -147,9 +147,41 @@ required revising `transferValidity.zok` to make the sender's starting
 balance a public input (previously private) — a settlement contract can't
 check a value it was never shown; see `zk/circuits/README.md`'s "Why
 balances are public" for the reasoning. It's one proven transfer at a
-time, not a batched rollup — `chain/sequencer` still doesn't exist, and
-there's still no real bridge moving actual HYDRO between L1 and this
-ledger. See `chain/settlement/README.md`.
+time, not a batched rollup — `chain/sequencer` still doesn't exist. See
+`chain/settlement/README.md`.
+
+`HydroSettlement` and the circuit were later revised again, this time for
+correctness: the ledger and circuit used `uint64`/ZoKrates `u64`, which
+overflows at ~18 whole HYDRO once real 18-decimal amounts are involved —
+fine for toy test balances, unusable for anything a real holder would
+have. The circuit now uses ZoKrates' native `field` type (comfortably
+larger than the entire 371M-HYDRO supply); the contract uses `uint256`.
+At the same time, `HydroSettlement` gained real `deposit`/`withdraw`
+functions that lock/release actual HYDRO 1:1 against the ledger — the
+bridge primitive `apps/bridge` is built on — and the old owner-only
+`fund()` faucet was removed, since it let the owner credit ledger balance
+that was never backed by real locked HYDRO, an insolvency gap once a real
+`withdraw()` existed. 12 settlement tests now cover deposit/withdraw
+(locking real tokens, insufficient-balance/approval rejection) alongside
+the original proof-checking tests, all using realistic 18-decimal
+amounts. `apps/bridge` is a UI on top: connect a local-devnet account
+(pasting a private key — no real wallet-extension support yet, see
+`apps/bridge/README.md` for why) and deposit/withdraw HYDRO between
+wallet and ledger. `@hydro/sdk` gained `depositToSettlement`,
+`withdrawFromSettlement`, `getSettlementBalance` for this. Manually
+verified end-to-end in a real browser against a live devnet: real
+deposit and withdraw transactions moved the exact expected amounts.
+
+A first treasury contract is also built: `contracts/treasury`'s
+`HydroTreasury.sol` — a governance-gated vault for HYDRO (or any ERC-20)
+and ETH. Deliberately minimal: every disbursement is a single
+owner-authorized transfer carrying a human-readable reason in its event,
+not a budgeting or vesting system. 9 tests cover access control, correct
+disbursement, insufficient-balance safety, and the actual
+governance-gating pattern (ownership transferred to a `TimelockController`,
+disbursement only reachable via schedule → wait → execute). Verified
+against a live devnet too. See `contracts/treasury/README.md`. This
+completes the `contracts/` set (token, staking, governance, treasury).
 
 A first staking contract is also built: `contracts/staking`'s
 `HydroStaking.sol` — stake HYDRO, earn HYDRO, no lock-up, continuous
@@ -198,6 +230,6 @@ Notes on environment-specific workarounds:
   5.6.x) uses the MCOPY opcode in some utilities, so every package's
   `scripts/compile.ts` sets `evmVersion: "cancun"` explicitly.
 
-Everything past that (treasury, a real batch state-transition circuit, a
-sequencer, a real L1↔L2 bridge, dashboard, DeFi/RWA/DePIN examples) is not
+Everything past that (a real batch state-transition circuit, a sequencer,
+a real two-chain L1↔L2 bridge, dashboard, DeFi/RWA/DePIN examples) is not
 yet built — follow the build order above, one module at a time.

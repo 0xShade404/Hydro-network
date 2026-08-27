@@ -18,13 +18,17 @@ Exports:
 - `hydroLocal` — the local devnet chain definition (chain id `90731`).
 - `createHydroClient(options?)` — a read-only `PublicClient`.
 - `createHydroWalletClient(privateKey, options?)` — a signing `WalletClient`.
-- `getTokenInfo`, `getTokenBalance`, `transferToken` — ERC-20 helpers (works
-  against `HydroToken` or any other standard ERC-20).
-- `erc20Abi` — the standard ERC-20 ABI these helpers use.
+- `getTokenInfo`, `getTokenBalance`, `transferToken`, `getAllowance`,
+  `approveToken` — ERC-20 helpers (work against `HydroToken` or any other
+  standard ERC-20). `erc20Abi` is the ABI they use.
+- `getSettlementBalance`, `depositToSettlement`, `withdrawFromSettlement`
+  — `chain/settlement`'s deposit/withdraw bridge primitive.
+  `depositToSettlement` checks the existing allowance first and only
+  sends an `approve` if it isn't already enough. `hydroSettlementAbi` is
+  the ABI these use.
 
-This SDK currently only knows the standard ERC-20 surface, since that's all
-`HydroToken` exposes today. Staking/governance/bridge-specific methods will
-be added once those contracts exist.
+Staking/governance-specific methods aren't here yet — `apps/bridge` is the
+first app built on this SDK beyond `apps/explorer`.
 
 ## Usage
 
