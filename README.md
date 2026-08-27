@@ -239,7 +239,7 @@ network security.
 
 # Status
 
-**Stage:** Architecture / Early Development
+**Stage:** Early Development — first milestone (local dev network) built
 
 **Network:** Hydro
 
@@ -252,6 +252,24 @@ network security.
 **Settlement:** Ethereum
 
 **Scaling:** ZK
+
+## What's built
+
+- **Local dev network** — EVM execution, JSON-RPC, block production
+  (`chain/node`, `chain/config`). Run it with `npm run node:dev`.
+- **HYDRO token contract** — fixed-supply ERC-20, 371,000,000 max supply,
+  no mint function (`contracts/token`).
+- **Deployment script** — `npm run deploy:local`.
+- **Hydro SDK** — TypeScript client for reading/writing against the network
+  (`sdk/hydro-sdk`).
+- **Tests** — contract unit tests, SDK unit tests, and an end-to-end
+  integration test covering network + contract + SDK together. Run them
+  all with `npm run test:all`.
+
+Everything else in this README (staking, governance, bridge, ZK pipeline,
+explorer, DeFi/RWA/DePIN examples) is design/roadmap, not yet implemented.
+See `CLAUDE.md` for the build order and `docs/architecture.md` for a
+build-by-build breakdown.
 
 ---
 

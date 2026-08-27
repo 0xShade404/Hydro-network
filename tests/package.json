@@ -1,0 +1,18 @@
+{
+  "name": "@hydro/integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cross-package integration tests: local devnet + HydroToken contract + Hydro SDK.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --testTimeout=60000"
+  },
+  "dependencies": {
+    "@hydro/sdk": "0.1.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

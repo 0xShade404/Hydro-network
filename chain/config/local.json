@@ -1,0 +1,16 @@
+{
+  "network": "hydro-local",
+  "chainId": 90731,
+  "rpcUrl": "http://127.0.0.1:8545",
+  "blockTime": "auto-mine (one block per transaction)",
+  "currency": {
+    "name": "Hydro Ether",
+    "symbol": "ETH",
+    "decimals": 18
+  },
+  "notes": [
+    "chainId is a provisional local-devnet id, not an assigned mainnet/testnet id.",
+    "Served by Hardhat Network — see chain/node/README.md to run it.",
+    "Must stay in sync with contracts/token/hardhat.config.ts and sdk/hydro-sdk/src/chain.ts."
+  ]
+}

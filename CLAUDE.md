@@ -120,5 +120,15 @@ Build the foundation first.
 
 ## Status
 
-This repository currently contains only the project scaffold. Implementation
-has not started yet.
+First milestone (local Hydro dev network) is built: EVM execution + JSON-RPC
++ block production via Hardhat Network (`chain/node`), the HydroToken
+ERC-20 (`contracts/token`), a deploy script, the Hydro SDK
+(`sdk/hydro-sdk`), and unit + integration tests (`npm run test:all`).
+
+Note: contracts are compiled with the npm `solc` package instead of
+Foundry/Hardhat's own downloader, because this environment's network policy
+blocks `binaries.soliditylang.org`. See `contracts/token/README.md`.
+
+Everything past that (staking, governance, treasury, ZK prover/verifier,
+bridge, explorer, dashboard, DeFi/RWA/DePIN examples) is not yet built —
+follow the build order above, one module at a time.

@@ -16,6 +16,11 @@ zk/**/*.ptau
 zk/**/proving_key*
 zk/**/verification_key*
 
+# Hardhat / Solidity build output
+artifacts/
+cache/
+typechain-types/
+
 # Environment
 .env
 .env.local
