@@ -275,10 +275,16 @@ network security.
   for exact scope, and its security note: the setup used is a local,
   non-ceremony Groth16 setup, fine for demonstrating the pipeline but not
   for securing real value.
+- **Settlement contract** — `chain/settlement`'s `HydroSettlement.sol`, an
+  on-chain ledger that only updates when a valid `zk/circuits` proof is
+  submitted, checked against the contract's own stored balances (not
+  trusted blindly). One proven transfer at a time, not a batched rollup —
+  see `chain/settlement/README.md` for exactly what it is and isn't.
 - **Tests** — contract unit tests, SDK unit tests, explorer component
   tests, an end-to-end integration test covering network + contract +
-  SDK, and ZK prover/verifier tests (including real on-chain pairing
-  checks). Run them all with `npm run test:all`.
+  SDK, ZK prover/verifier tests (including real on-chain pairing checks),
+  and settlement tests (valid transfers applied, mismatched/replayed
+  proofs rejected). Run them all with `npm run test:all`.
 
 Everything else in this README (staking, governance, bridge, DeFi/RWA/DePIN
 examples, a full rollup state-transition circuit) is design/roadmap, not

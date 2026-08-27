@@ -13,7 +13,7 @@ describe("generateTransferProof", () => {
 
     expect(proof.scheme).toBe("g16");
     expect(proof.curve).toBe("bn128");
-    expect(proof.inputs).toHaveLength(4);
+    expect(proof.inputs).toHaveLength(5);
   });
 
   it("throws instead of producing a proof when the sender's balance is insufficient", async () => {
@@ -55,12 +55,12 @@ describe("formatProofForContract", () => {
     expect(formatted.proof.a).toHaveLength(2);
     expect(formatted.proof.b).toHaveLength(2);
     expect(formatted.proof.c).toHaveLength(2);
-    expect(formatted.input).toHaveLength(4);
+    expect(formatted.input).toHaveLength(5);
     for (const v of [...formatted.proof.a, ...formatted.proof.b.flat(), ...formatted.proof.c, ...formatted.input]) {
       expect(typeof v).toBe("bigint");
     }
 
-    // public inputs are [senderBalanceAfter, recipientBalanceBefore, recipientBalanceAfter, output]
-    expect(formatted.input).toEqual([70n, 10n, 40n, 1n]);
+    // public inputs are [senderBalanceBefore, senderBalanceAfter, recipientBalanceBefore, recipientBalanceAfter, output]
+    expect(formatted.input).toEqual([100n, 70n, 10n, 40n, 1n]);
   });
 });

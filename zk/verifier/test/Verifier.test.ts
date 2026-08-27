@@ -38,7 +38,8 @@ describe("TransferValidity Verifier (generated Groth16 verifier)", () => {
     });
     const { proof: solidityProof, input } = formatProofForContract(proof);
 
-    // Claim the recipient ended up with more than was actually proved.
+    // input is [senderBalanceBefore, senderBalanceAfter, recipientBalanceBefore, recipientBalanceAfter, output].
+    // Claim the recipient started with a different balance than was actually proved.
     const tamperedInput = [...input];
     tamperedInput[2] = tamperedInput[2] + 1_000_000n;
 

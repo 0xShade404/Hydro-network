@@ -1,11 +1,11 @@
 // TransferValidity: proves that a single balance transfer is valid without
-// revealing the sender's starting balance or the transferred amount.
+// revealing the transferred amount.
 //
 // Private witness:
-//   senderBalanceBefore  - sender's balance before the transfer
-//   amount                - amount transferred
+//   amount - amount transferred
 //
 // Public inputs:
+//   senderBalanceBefore    - sender's balance before the transfer
 //   senderBalanceAfter     - sender's balance after the transfer
 //   recipientBalanceBefore - recipient's balance before the transfer
 //   recipientBalanceAfter  - recipient's balance after the transfer
@@ -16,10 +16,19 @@
 //   - the recipient's new balance is exactly balance + amount
 //     (i.e. value is conserved: nothing is created or destroyed)
 //
+// Balances are public (not just the amount) so an on-chain settlement
+// contract (chain/settlement) can check the proof's claimed "before"
+// balances against its own stored ledger before applying the "after"
+// balances — otherwise it would have no way to tell a proof of a real
+// transfer from a proof of a transfer starting from a made-up balance.
+// An earlier version of this circuit kept senderBalanceBefore private,
+// which looked more private but was actually unusable for settlement:
+// see chain/settlement/README.md.
+//
 // This is the smallest building block of a rollup validity proof, not a
 // full batch/state-transition circuit for the whole chain — see
 // zk/circuits/README.md for scope and what's still missing.
-def main(private u64 senderBalanceBefore, private u64 amount, u64 senderBalanceAfter, u64 recipientBalanceBefore, u64 recipientBalanceAfter) -> bool {
+def main(u64 senderBalanceBefore, private u64 amount, u64 senderBalanceAfter, u64 recipientBalanceBefore, u64 recipientBalanceAfter) -> bool {
     assert(amount <= senderBalanceBefore);
     assert(senderBalanceAfter == senderBalanceBefore - amount);
     assert(recipientBalanceAfter == recipientBalanceBefore + amount);

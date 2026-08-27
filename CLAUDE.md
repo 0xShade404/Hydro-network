@@ -135,6 +135,22 @@ accepts valid proofs, rejects tampered/mismatched ones). Its Groth16 setup
 is local and non-ceremony — fine for the pipeline demo, never for real
 value. See `zk/circuits/README.md` for the full scope and security notes.
 
+A first Ethereum settlement contract is also built: `chain/settlement`'s
+`HydroSettlement.sol` maintains an on-chain balances ledger that only
+updates when a valid `zk/circuits` proof is submitted, checked against the
+contract's own stored "before" balances (not trusted blindly) — tested for
+valid transfers applying correctly, mismatched-state proofs being
+rejected, callers not being able to claim a different outcome than what
+was proved, and proof replay being blocked once the ledger has moved on.
+Verified against a live devnet, not just the in-process test network. This
+required revising `transferValidity.zok` to make the sender's starting
+balance a public input (previously private) — a settlement contract can't
+check a value it was never shown; see `zk/circuits/README.md`'s "Why
+balances are public" for the reasoning. It's one proven transfer at a
+time, not a batched rollup — `chain/sequencer` still doesn't exist, and
+there's still no real bridge moving actual HYDRO between L1 and this
+ledger. See `chain/settlement/README.md`.
+
 Notes on environment-specific workarounds:
 - Contracts are compiled with the npm `solc` package instead of
   Foundry/Hardhat's own downloader, because this environment's network
@@ -143,7 +159,7 @@ Notes on environment-specific workarounds:
   compiler and prover as a self-contained WASM npm package, needing no
   separate binary download. See `zk/circuits/README.md`.
 
-Everything past that (staking, governance, treasury, Ethereum settlement /
-a real batch state-transition circuit, bridge, dashboard, DeFi/RWA/DePIN
-examples) is not yet built — follow the build order above, one module at a
-time.
+Everything past that (staking, governance, treasury, a real batch
+state-transition circuit, a sequencer, a real L1↔L2 bridge, dashboard,
+DeFi/RWA/DePIN examples) is not yet built — follow the build order above,
+one module at a time.

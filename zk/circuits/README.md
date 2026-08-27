@@ -4,7 +4,8 @@
 circuit proving that a single balance transfer is valid (sender has enough
 balance, and value is conserved: `senderAfter = senderBefore - amount`,
 `recipientAfter = recipientBefore + amount`) without revealing the
-sender's starting balance or the transferred amount.
+transferred amount. The four balances are public inputs, not hidden —
+see "Why balances are public" below.
 
 ## Why ZoKrates
 
@@ -16,6 +17,19 @@ issue with Foundry/solc). It targets the bn128 curve, matching Ethereum's
 `ecAdd`/`ecMul`/`ecPairing` precompiles, so proofs verify on any EVM chain
 with a plain Solidity verifier contract — no custom precompiles or L1
 changes needed.
+
+## Why balances are public
+
+An earlier version of this circuit kept `senderBalanceBefore` private too,
+which looked more private but turned out to be unusable once
+`chain/settlement` needed to consume it: a settlement contract can only
+trust a proof's claims about "before" state if it can check them against
+its own stored ledger, and it can't check a value that was never revealed
+to it. Making all four balances public inputs — while keeping the actual
+transferred `amount` private — lets the contract verify the proof is
+about *its* current state, not some made-up starting balance, while still
+hiding the one value a transfer's participants would actually want
+hidden.
 
 ## Scope
 

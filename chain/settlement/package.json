@@ -1,0 +1,21 @@
+{
+  "name": "@hydro/settlement",
+  "version": "0.1.0",
+  "private": true,
+  "description": "L1 settlement contract: applies transfers only when accompanied by a valid zk/circuits validity proof.",
+  "scripts": {
+    "compile": "ts-node --transpile-only scripts/compile.ts",
+    "test": "npm run compile && hardhat test --no-compile",
+    "deploy:local": "npm run compile && hardhat run scripts/deploy.ts --network localhost --no-compile"
+  },
+  "dependencies": {
+    "@hydro/zk-prover": "0.1.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.5",
+    "solc": "0.8.24",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}

@@ -11,7 +11,7 @@ precompiles — no custom cryptography written for this project, per
 The contract's public entry point:
 
 ```solidity
-function verifyTx(Proof memory proof, uint[4] memory input) public view returns (bool r)
+function verifyTx(Proof memory proof, uint[5] memory input) public view returns (bool r)
 ```
 
 `zk/prover`'s `formatProofForContract()` converts a ZoKrates proof into
